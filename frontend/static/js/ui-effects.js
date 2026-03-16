@@ -61,6 +61,14 @@ const UIEffects = {
         const buttons = document.getElementById("intro-buttons");
         if (!line1) return;
 
+        // Safety net: always show buttons after 8 seconds even if intro fails
+        const safetyTimer = setTimeout(() => {
+            if (buttons && !buttons.classList.contains("visible")) {
+                buttons.classList.add("visible");
+                if (this.el.conditionSelector) this.el.conditionSelector.style.display = "block";
+            }
+        }, 8000);
+
         if (window.speechSynthesis) {
             window.speechSynthesis.getVoices();
             await this._wait(200);
@@ -99,6 +107,7 @@ const UIEffects = {
         await this._speak("Powered by Gemini", 0.95, 1.08);
 
         await this._wait(250);
+        clearTimeout(safetyTimer);
         if (buttons) buttons.classList.add("visible");
         await this._wait(600);
         if (this.el.conditionSelector) this.el.conditionSelector.style.display = "block";

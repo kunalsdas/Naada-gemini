@@ -326,7 +326,7 @@ class NaadaApp {
 
             const lang = this._selectedLanguage || "en";
             const env = this._selectedEnvironment || "home";
-            this.ws.sendText(`[SYSTEM CONTEXT] User language: ${langName[lang] || lang}. Please speak in ${langName[lang] || "English"} throughout this session. User is currently ${envLabel[env] || env}. Adapt sounds and voice guidance for this environment.`);
+            this.ws.sendText(`[SYSTEM CONTEXT] User language: ${langName[lang] || lang}. You MUST speak ONLY in ${langName[lang] || "English"} throughout this ENTIRE session. Do NOT switch to any other language, even if the user speaks in a different language. Always respond in ${langName[lang] || "English"} only. User is currently ${envLabel[env] || env}. Adapt sounds and voice guidance for this environment.`);
 
             this.el.moodChips.style.display = "block";
             this._chipTimeout = setTimeout(() => {
@@ -652,7 +652,7 @@ class NaadaApp {
         document.body.classList.remove("meditation-mode");
         this._setMoodBg("neutral");
 
-        if (!hasReport) this._showScreen("landing");
+        this._showScreen("landing");
 
         this._initialWellnessScore = null;
         this._currentWellnessScore = null;

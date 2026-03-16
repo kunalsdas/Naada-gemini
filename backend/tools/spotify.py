@@ -5,12 +5,15 @@ ADK tool functions for controlling Spotify playback during therapy.
 
 import asyncio
 import logging
+import platform
 
 from google.adk.tools.tool_context import ToolContext
 
 import spotify_control
 
 logger = logging.getLogger("naada.spotify")
+
+_IS_MACOS = platform.system() == "Darwin"
 
 
 def spotify_play(
@@ -33,6 +36,12 @@ def spotify_play(
     Returns:
         dict with playback status and what is playing
     """
+    if not _IS_MACOS:
+        return {
+            "status": "unavailable",
+            "error": "Spotify desktop control is only available when running locally on macOS. Suggest the user play therapy sounds instead, or tell them to open Spotify manually.",
+        }
+
     mood_key = mood_or_query.lower().strip()
     playlist_info = spotify_control.MOOD_PLAYLISTS.get(mood_key)
 
@@ -94,6 +103,9 @@ def spotify_control_playback(
     Returns:
         dict with action result
     """
+    if not _IS_MACOS:
+        return {"status": "unavailable", "error": "Spotify control only available on local macOS."}
+
     loop = asyncio.get_event_loop()
 
     if action in ("volume_up", "volume_down"):
@@ -119,6 +131,9 @@ def spotify_now_playing(tool_context: ToolContext) -> dict:
     Returns:
         dict with track name, artist, album, and playback state
     """
+    if not _IS_MACOS:
+        return {"status": "unavailable", "is_playing": False, "error": "Spotify control only available on local macOS."}
+
     source = tool_context.state.get("spotify_source", "")
     is_active = tool_context.state.get("spotify_active", False)
 
