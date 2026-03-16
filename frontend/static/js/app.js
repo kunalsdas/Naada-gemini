@@ -355,8 +355,23 @@ class NaadaApp {
         this.ws.onDisconnected = () => {
             this._setStatus("disconnected");
             this.audio.stopCapture();
-            this.therapy.stop();
             clearInterval(this._autoCaptureId);
+            // Auto-reconnect if session was active (unexpected disconnect)
+            if (this.isSessionActive && !this._endingSession) {
+                this._addBubble("Connection lost. Reconnecting...", "system");
+                this._reconnectAttempts = (this._reconnectAttempts || 0) + 1;
+                if (this._reconnectAttempts <= 3) {
+                    setTimeout(() => {
+                        if (this.isSessionActive && !this._endingSession) {
+                            this._connectSession();
+                        }
+                    }, 1500 * this._reconnectAttempts);
+                } else {
+                    this._addBubble("Could not reconnect. Please start a new session.", "system");
+                    this._reconnectAttempts = 0;
+                    this.endSession();
+                }
+            }
         };
 
         this.ws.onError = (err) => { this._showError("Connection Error", err.message || "Unable to connect."); };
@@ -589,6 +604,8 @@ class NaadaApp {
     // --- Session Management ---
 
     async startSession() {
+        this._endingSession = false;
+        this._reconnectAttempts = 0;
         try {
             this.el.startBtn.disabled = true;
             this.el.startBtn.innerHTML = '<span class="material-icons-round">hourglass_top</span> Connecting...';
@@ -609,6 +626,8 @@ class NaadaApp {
     }
 
     endSession() {
+        this._endingSession = true;
+        this._reconnectAttempts = 0;
         const hasReport = this._wellnessScores.length >= 2 || this._moodJourney.length >= 1;
         if (hasReport) this._showSessionReport();
 
@@ -671,6 +690,7 @@ class NaadaApp {
 
         this.el.startBtn.disabled = false;
         this.el.startBtn.innerHTML = '<span class="material-icons-round">self_improvement</span> Begin Your Session';
+        this._endingSession = false;
     }
 
     toggleCamera() {

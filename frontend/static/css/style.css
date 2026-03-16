@@ -320,8 +320,12 @@ body {
 
 /* CSS fallback: if JS fails, show buttons after 6s */
 @keyframes buttonsReveal {
-    0%   { opacity: 0; transform: translateY(30px); }
-    100% { opacity: 1; transform: translateY(0); }
+    0%   { opacity: 0; transform: translateY(30px); pointer-events: none; }
+    100% { opacity: 1; transform: translateY(0); pointer-events: auto; }
+}
+.intro-buttons {
+    animation: buttonsReveal 0.6s ease forwards;
+    animation-delay: 8s;
 }
 
 /* Gemini gradient button */

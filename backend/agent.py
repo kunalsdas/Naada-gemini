@@ -4,7 +4,6 @@ Configures the ADK root agent with all tools and model settings.
 """
 
 from google.adk.agents.llm_agent import Agent
-from google.adk.tools import google_search
 from google.genai import types
 
 from config import GEMINI_LIVE_MODEL
@@ -22,7 +21,7 @@ root_agent = Agent(
         "It continuously monitors your mood and adapts the therapy in real-time."
     ),
     instruction=SYSTEM_INSTRUCTION,
-    tools=[google_search] + ALL_TOOLS,
+    tools=ALL_TOOLS,
     generate_content_config=types.GenerateContentConfig(
         safety_settings=[
             types.SafetySetting(

@@ -45,7 +45,7 @@ def spotify_play(
     mood_key = mood_or_query.lower().strip()
     playlist_info = spotify_control.MOOD_PLAYLISTS.get(mood_key)
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
 
     async def _stop_then_play_uri(uri):
         await spotify_control.control("pause")
@@ -106,7 +106,7 @@ def spotify_control_playback(
     if not _IS_MACOS:
         return {"status": "unavailable", "error": "Spotify control only available on local macOS."}
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
 
     if action in ("volume_up", "volume_down"):
         async def adjust_volume():
