@@ -234,12 +234,12 @@ const TherapyController = {
 
         const sounds = [];
         activeTiles.forEach(tile => {
-            sounds.push(`${tile.dataset.sound}:${(1 / activeTiles.length).toFixed(2)}`);
+            sounds.push({ type: tile.dataset.sound, volume: 1 / activeTiles.length });
         });
 
         this._stopBgMusic();
         this.therapy.init();
-        this.therapy.playMix(sounds.join(",")).catch(e => console.warn("[Naada] Mixer play error:", e));
+        this.therapy.playMix(sounds).catch(e => console.warn("[Naada] Mixer play error:", e));
 
         this.el.therapyIndicator.classList.add("active");
         this.el.therapyLabel.style.display = "flex";

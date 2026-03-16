@@ -155,6 +155,7 @@ class GenerativeSoundEngine {
 
         const period = Math.round(sr / freq);
         const delayLine = new Float32Array(period);
+        const lpCoeff = brightness; // lowpass filter coefficient controls string brightness
 
         for (let i = 0; i < period; i++) {
             const noise = Math.random() * 2 - 1;
@@ -638,6 +639,7 @@ class GenerativeSoundEngine {
      */
     _scheduleMelody(raga, tonic, tempo, instrument, volume) {
         const secPerBeat = 60 / tempo;
+        let nextPhrase = this.ctx.currentTime + 0.1; // initialize scheduling start time
 
         const scheduleNextPhrase = () => {
             if (!this.isPlaying) return;

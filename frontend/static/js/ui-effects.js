@@ -125,6 +125,8 @@ const UIEffects = {
             this._bgGain = this.therapy.ctx.createGain();
             this._bgGain.gain.value = 0;
             this._bgGain.connect(this.therapy.ctx.destination);
+            // Also connect to analyser so visualizer reacts to bg music
+            if (this.therapy.analyser) this._bgGain.connect(this.therapy.analyser);
 
             const buffer = await this.therapy._loadAudio("tibetan-bowls.mp3");
             const source = this.therapy.ctx.createBufferSource();
@@ -283,6 +285,8 @@ const UIEffects = {
         if (this.el.sosBtn) this.el.sosBtn.classList.remove("sos-active");
         if (this.el.groundingOverlay) this.el.groundingOverlay.style.display = "none";
         this._stopBreathingGuide();
+        // Stop SOS therapy sounds
+        if (this.therapy) this.therapy.stop();
     },
 
     // --- Zen Bubble & Micro-Meditation ---
