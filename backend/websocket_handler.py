@@ -176,19 +176,25 @@ async def websocket_endpoint(
                 await send_event_to_client(websocket, event)
 
         except WebSocketDisconnect:
-            logger.info(f"WebSocket closed during downstream: {user_id}")
+            logger.info(f"Session ended normally: {user_id}")
         except genai_errors.APIError as e:
+            # 1000 = normal WebSocket close, not a real error
             if "1000" in str(e):
-                logger.info(f"Session closed cleanly: {user_id}")
+                logger.info(f"Session ended normally: {user_id}")
             else:
                 logger.error(f"Gemini API error: {e}")
         except Exception as e:
-            if ConnectionClosedOK and isinstance(e, ConnectionClosedOK):
-                logger.info(f"Session closed cleanly: {user_id}")
-            elif ConnectionClosedError and isinstance(e, ConnectionClosedError):
-                logger.info(f"WebSocket connection closed: {user_id}")
-            elif "1000" in str(e):
-                logger.info(f"Session closed cleanly: {user_id}")
+            err_str = str(e)
+            # All of these are normal session teardown — not errors
+            if (
+                (ConnectionClosedOK and isinstance(e, ConnectionClosedOK))
+                or (ConnectionClosedError and isinstance(e, ConnectionClosedError))
+                or "1000" in err_str
+                or "1008" in err_str
+                or "ConnectionClosed" in type(e).__name__
+                or "policy violation" in err_str.lower()
+            ):
+                logger.info(f"Session ended normally: {user_id}")
             else:
                 logger.error(f"Downstream error: {e}")
         finally:
@@ -201,7 +207,11 @@ async def websocket_endpoint(
     try:
         await asyncio.gather(upstream_messages(), downstream_events())
     except Exception as e:
-        logger.error(f"WebSocket session error: {e}")
+        err_str = str(e)
+        if any(p in err_str for p in ["1000", "1008", "ConnectionClosed", "policy violation"]):
+            logger.info(f"Session ended normally: {user_id}/{session_id}")
+        else:
+            logger.error(f"WebSocket session error: {e}")
     finally:
         live_request_queue.close()
         logger.info(f"Session ended: {user_id}/{session_id}")
