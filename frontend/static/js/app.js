@@ -49,9 +49,15 @@ class NaadaApp {
 
         this._bgMusicStarted = false;
         this._startBgMusicOnInteraction();
-        this._showStreak();
-        this._renderHeatmap();
-        try { this._playIntroSequence(); } catch(e) { console.error("[Naada] Intro error:", e); }
+        // Delay streak/heatmap until intro completes so landing feels clean
+        this._playIntroSequence().then(() => {
+            this._showStreak();
+            this._renderHeatmap();
+        }).catch(e => {
+            console.error("[Naada] Intro error:", e);
+            this._showStreak();
+            this._renderHeatmap();
+        });
     }
 
     _bindElements() {
