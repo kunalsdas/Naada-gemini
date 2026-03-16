@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4c1d95">
+    <meta name="description" content="Naada - AI sound therapy companion that detects your mood and guides you through personalized healing frequencies.">
+
+    <title>Naada – AI Sound Therapy</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/static/images/icon-192.png">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Landing Screen — Full-screen cinematic intro -->
+    <div id="landing-screen" class="screen active">
+        <!-- Animated Gemini gradient blobs (full-screen) -->
+        <div class="intro-blobs">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+            <div class="blob blob-4"></div>
+        </div>
+
+        <!-- Cinematic text sequence -->
+        <div class="intro-sequence" id="intro-sequence">
+            <p class="intro-line intro-line-1">Hey there</p>
+            <p class="intro-line intro-line-2">Welcome to</p>
+            <h1 class="intro-line intro-title intro-line-3">Naa<span class="highlight">da</span></h1>
+            <p class="intro-line intro-sub intro-line-4">AI Sound Therapy</p>
+            <p class="intro-line intro-powered intro-line-5">Powered by <span class="gemini-text">Gemini</span></p>
+        </div>
+
+        <!-- Wellness Streak Badge -->
+        <div id="streak-badge" class="streak-badge" style="display:none;">
+            <span class="streak-fire">&#x1F525;</span>
+            <span class="streak-count" id="streak-count">0</span>
+            <span class="streak-label">day streak</span>
+        </div>
+
+        <!-- Mood Heatmap Calendar -->
+        <div id="mood-heatmap" class="mood-heatmap" style="display:none;">
+            <div class="heatmap-header">
+                <span class="material-icons-round">calendar_month</span>
+                <span>Your Journey</span>
+            </div>
+            <div class="heatmap-grid" id="heatmap-grid"></div>
+            <div class="heatmap-legend">
+                <span class="heatmap-legend-label">Less</span>
+                <div class="heatmap-legend-cell" style="background:rgba(124,58,237,0.1)"></div>
+                <div class="heatmap-legend-cell" style="background:rgba(124,58,237,0.3)"></div>
+                <div class="heatmap-legend-cell" style="background:rgba(124,58,237,0.55)"></div>
+                <div class="heatmap-legend-cell" style="background:rgba(124,58,237,0.8)"></div>
+                <span class="heatmap-legend-label">More</span>
+            </div>
+        </div>
+
+        <!-- Buttons (appear after text sequence) -->
+        <div class="intro-buttons" id="intro-buttons">
+            <button id="start-btn" class="primary-btn gemini-btn">
+                <span class="material-icons-round">self_improvement</span>
+                Begin Your Session
+            </button>
+
+            <button id="courses-btn" class="courses-btn">
+                <span class="material-icons-round">school</span>
+                Healing Courses
+            </button>
+
+            <div class="permission-note">
+                <span class="material-icons-round">info</span>
+                <span>Camera &amp; mic for mood sensing</span>
+            </div>
+        </div>
+
+        <!-- Clinical Condition Selector -->
+        <div id="condition-selector" class="condition-selector" style="display:none;">
+            <div class="condition-selector-header">
+                <span class="material-icons-round">medical_services</span>
+                <span>Personalize for your condition</span>
+            </div>
+            <div class="condition-chips-row">
+                <button class="condition-chip active" data-condition="">🌿 General</button>
+                <button class="condition-chip" data-condition="stuttering">🗣️ Stutter</button>
+                <button class="condition-chip" data-condition="adhd">⚡ ADHD</button>
+                <button class="condition-chip" data-condition="ptsd">🛡️ PTSD</button>
+                <button class="condition-chip" data-condition="parkinsons">🌱 Parkinson's</button>
+                <button class="condition-chip" data-condition="tinnitus">👂 Tinnitus</button>
+                <button class="condition-chip" data-condition="chronic_pain">💫 Chronic Pain</button>
+                <button class="condition-chip" data-condition="autism">🌈 Autism/SPD</button>
+                <button class="condition-chip" data-condition="aphasia">💬 Aphasia</button>
+                <button class="condition-chip" data-condition="alzheimers">🧩 Memory</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Selection Overlay -->
+    <div id="course-overlay" class="course-overlay" style="display:none;">
+        <div class="course-overlay-content">
+            <div class="course-overlay-header">
+                <h2>Healing Courses</h2>
+                <button id="close-courses-btn" class="icon-btn">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div id="course-list" class="course-list"></div>
+        </div>
+    </div>
+
+    <!-- Main Agent Screen -->
+    <div id="agent-screen" class="screen">
+        <!-- Mood Background (animated gradient based on mood) -->
+        <div id="mood-bg" class="mood-bg mood-neutral"></div>
+
+        <!-- Audio-reactive particles (behind content) -->
+        <canvas id="particles-canvas" class="particles-canvas"></canvas>
+
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <span class="status-dot" id="status-dot"></span>
+                <span class="status-text" id="status-text">Connecting...</span>
+            </div>
+            <div class="top-bar-center">
+                <h2>Naa<span class="highlight">da</span></h2>
+                <div id="session-timer" class="session-timer" style="display:none;">
+                    <span class="material-icons-round">timer</span>
+                    <span id="session-timer-text">00:00</span>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <button id="neurotone-btn" class="icon-btn neurotone-scan-btn" title="Neurotone Analysis" style="display:none;">
+                    <span class="material-icons-round">graphic_eq</span>
+                </button>
+                <button id="freqmatrix-btn" class="icon-btn" title="Frequency Matrix" style="display:none;">
+                    <span class="material-icons-round">equalizer</span>
+                </button>
+                <button id="camera-toggle-btn" class="icon-btn" title="Toggle Camera">
+                    <span class="material-icons-round">videocam</span>
+                </button>
+                <button id="end-session-btn" class="icon-btn danger" title="End Session">
+                    <span class="material-icons-round">call_end</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Camera View (smaller for therapy - face detection) -->
+        <div id="camera-container" class="camera-container">
+            <video id="camera-video" autoplay playsinline muted></video>
+            <canvas id="camera-canvas" style="display:none;"></canvas>
+            <div id="camera-overlay" class="camera-overlay">
+                <span class="material-icons-round">face</span>
+                <p>Reading your mood...</p>
+            </div>
+        </div>
+
+        <!-- AI Perception Panel ("Neural Mirror") -->
+        <div id="perception-panel" class="perception-panel" style="display:none;">
+            <div class="perception-header">
+                <span class="material-icons-round perception-icon">psychology</span>
+                <span class="perception-title">AI Perception</span>
+                <div class="perception-pulse" id="perception-pulse"></div>
+            </div>
+            <div class="perception-body">
+                <div class="perception-section" id="facial-section">
+                    <div class="perception-section-label">
+                        <span class="material-icons-round">face</span>
+                        <span>Face</span>
+                    </div>
+                    <div class="perception-tags" id="facial-tags">
+                        <span class="perception-tag waiting">Analyzing...</span>
+                    </div>
+                </div>
+                <div class="perception-section" id="voice-section">
+                    <div class="perception-section-label">
+                        <span class="material-icons-round">graphic_eq</span>
+                        <span>Voice</span>
+                    </div>
+                    <div class="perception-tags" id="voice-tags">
+                        <span class="perception-tag waiting">Analyzing...</span>
+                    </div>
+                </div>
+                <div class="perception-confidence">
+                    <span class="confidence-label">Confidence</span>
+                    <div class="confidence-bar-track">
+                        <div class="confidence-bar-fill" id="confidence-bar" style="width:0%"></div>
+                    </div>
+                    <span class="confidence-value" id="confidence-value">--</span>
+                </div>
+                <div class="perception-metrics" id="perception-metrics">
+                    <div class="metric">
+                        <span class="metric-label">Stress</span>
+                        <div class="metric-bar-track">
+                            <div class="metric-bar-fill stress" id="stress-meter" style="width:30%"></div>
+                        </div>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Relax</span>
+                        <div class="metric-bar-track">
+                            <div class="metric-bar-fill relax" id="relax-meter" style="width:30%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Response Area -->
+        <div id="agent-area" class="agent-area">
+            <!-- Therapy Status -->
+            <div class="visualizer-container">
+                <canvas id="audio-visualizer" class="audio-visualizer-canvas"></canvas>
+                <div id="therapy-indicator" class="therapy-indicator">
+                    <div class="therapy-ring"></div>
+                    <div class="therapy-ring"></div>
+                    <div class="therapy-ring"></div>
+                    <span class="material-icons-round therapy-icon" id="therapy-icon">self_improvement</span>
+                </div>
+                <div id="agent-status" class="agent-status">
+                    <span id="agent-status-text">Sensing your mood...</span>
+                </div>
+                <div id="therapy-label" class="therapy-label" style="display:none;">
+                    <span class="material-icons-round">music_note</span>
+                    <span id="therapy-label-text">Playing: Om Drone</span>
+                </div>
+
+                <!-- Wellness Score Gauge -->
+                <div id="wellness-gauge" class="wellness-gauge" style="display:none;">
+                    <svg class="wellness-ring" viewBox="0 0 120 120">
+                        <circle class="wellness-ring-bg" cx="60" cy="60" r="52" />
+                        <circle class="wellness-ring-fill" id="wellness-ring-fill" cx="60" cy="60" r="52" />
+                    </svg>
+                    <div class="wellness-score-inner">
+                        <span class="wellness-score-number" id="wellness-score-number">--</span>
+                        <span class="wellness-score-label">Stress</span>
+                    </div>
+                    <div class="wellness-improvement" id="wellness-improvement" style="display:none;">
+                        <span class="material-icons-round">trending_down</span>
+                        <span id="wellness-improvement-text">0% reduced</span>
+                    </div>
+                </div>
+
+                <!-- Biometrics Bar (Heart Rate + Voice Stress) -->
+                <div id="biometrics-bar" class="biometrics-bar" style="display:none;">
+                    <div class="bio-metric heart-rate-metric">
+                        <span class="bio-icon heartbeat-icon material-icons-round">favorite</span>
+                        <div class="bio-data">
+                            <span class="bio-value" id="heart-rate-value">--</span>
+                            <span class="bio-unit">BPM</span>
+                        </div>
+                        <span class="bio-label">Heart Rate</span>
+                    </div>
+                    <div class="bio-divider"></div>
+                    <div class="bio-metric voice-stress-metric">
+                        <span class="bio-icon material-icons-round">graphic_eq</span>
+                        <div class="bio-data">
+                            <span class="bio-value" id="voice-stress-value">Low</span>
+                        </div>
+                        <div class="voice-stress-bar-track">
+                            <div class="voice-stress-bar-fill" id="voice-stress-bar"></div>
+                        </div>
+                        <span class="bio-label">Voice Stress</span>
+                    </div>
+                    <div class="bio-divider"></div>
+                    <div class="bio-metric coherence-metric">
+                        <span class="bio-icon material-icons-round">waves</span>
+                        <div class="bio-data">
+                            <span class="bio-value" id="coherence-value">--</span>
+                            <span class="bio-unit">%</span>
+                        </div>
+                        <span class="bio-label">Coherence</span>
+                    </div>
+                </div>
+
+                <!-- Therapy Science Panel -->
+                <div id="therapy-science" class="therapy-science" style="display:none;">
+                    <div class="science-hz" id="science-hz">528 Hz</div>
+                    <div class="science-name" id="science-name">Solfeggio Frequency</div>
+                    <div class="science-desc" id="science-desc">DNA repair &amp; stress reduction</div>
+                    <div class="science-evidence" id="science-evidence">Studied in sound therapy research</div>
+                </div>
+            </div>
+
+            <!-- Emotion Spectrum Radar -->
+            <div id="emotion-radar" class="emotion-radar" style="display:none;">
+                <canvas id="emotion-radar-canvas" class="emotion-radar-canvas"></canvas>
+            </div>
+
+            <!-- Mood Journey Timeline -->
+            <div id="mood-journey" class="mood-journey" style="display:none;">
+                <div class="mood-journey-header">
+                    <span class="material-icons-round">timeline</span>
+                    <span>Mood Journey</span>
+                </div>
+                <div id="mood-journey-timeline" class="mood-journey-timeline"></div>
+            </div>
+
+            <!-- Quick Mood Selection Chips -->
+            <div id="mood-chips" class="mood-chips-container" style="display:none;">
+                <p class="mood-chips-label">How are you feeling?</p>
+                <div class="mood-chips-grid">
+                    <button class="mood-chip" data-mood="stressed">
+                        <span class="chip-emoji">😰</span><span>Stressed</span>
+                    </button>
+                    <button class="mood-chip" data-mood="anxious">
+                        <span class="chip-emoji">😟</span><span>Anxious</span>
+                    </button>
+                    <button class="mood-chip" data-mood="sad">
+                        <span class="chip-emoji">😢</span><span>Sad</span>
+                    </button>
+                    <button class="mood-chip" data-mood="cant_sleep">
+                        <span class="chip-emoji">😴</span><span>Can't Sleep</span>
+                    </button>
+                    <button class="mood-chip" data-mood="need_focus">
+                        <span class="chip-emoji">🎯</span><span>Need Focus</span>
+                    </button>
+                    <button class="mood-chip" data-mood="meditation">
+                        <span class="chip-emoji">🧘</span><span>Meditate</span>
+                    </button>
+                    <button class="mood-chip" data-mood="baby_sleep">
+                        <span class="chip-emoji">👶</span><span>Baby Sleep</span>
+                    </button>
+                    <button class="mood-chip" data-mood="wellness">
+                        <span class="chip-emoji">✨</span><span>Wellness</span>
+                    </button>
+                </div>
+                <button id="analyze-mood-btn" class="analyze-mood-btn">
+                    <span class="material-icons-round">photo_camera</span>
+                    Analyze My Mood Instead
+                </button>
+            </div>
+
+            <!-- DAF Panel (Stuttering Therapy) -->
+            <div id="daf-panel" class="daf-panel" style="display:none;">
+                <div class="daf-header">
+                    <span class="material-icons-round">hearing</span>
+                    <span>DAF — Delayed Auditory Feedback</span>
+                    <span class="daf-badge">Clinical</span>
+                </div>
+                <div class="daf-body">
+                    <div class="daf-info">Hear your voice delayed by <strong id="daf-delay-value">150ms</strong> — proven to reduce stuttering 40–80%</div>
+                    <div class="daf-controls">
+                        <input type="range" id="daf-delay-slider" class="daf-slider" min="50" max="500" value="150" step="10">
+                        <button id="daf-toggle-btn" class="daf-toggle-btn">
+                            <span class="material-icons-round">mic</span>
+                            <span id="daf-toggle-label">Activate DAF</span>
+                        </button>
+                    </div>
+                    <div class="daf-techniques">
+                        <button class="daf-tech-btn active" data-delay="150">DAF 150ms</button>
+                        <button class="daf-tech-btn" data-delay="50">FAF 50ms</button>
+                        <button class="daf-tech-btn" data-delay="250">Slow 250ms</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transcript Area -->
+            <div id="transcript-area" class="transcript-area">
+                <div id="transcript-content" class="transcript-content">
+                </div>
+            </div>
+        </div>
+
+        <!-- Affirmation Card (floating glassmorphic card from AI) -->
+        <div id="affirmation-card" class="affirmation-card" style="display:none;">
+            <div class="affirmation-glow"></div>
+            <div class="affirmation-icon">
+                <span class="material-icons-round">auto_awesome</span>
+            </div>
+            <p class="affirmation-text" id="affirmation-text"></p>
+            <div class="affirmation-source">
+                <span class="material-icons-round">psychology</span>
+                <span>Naada AI</span>
+            </div>
+        </div>
+
+        <!-- Chakra Energy Map -->
+        <div id="chakra-map" class="chakra-map" style="display:none;">
+            <div class="chakra-body">
+                <svg viewBox="0 0 100 220" class="chakra-silhouette">
+                    <ellipse cx="50" cy="22" rx="18" ry="20" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+                    <rect x="35" y="42" width="30" height="55" rx="12" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+                    <rect x="38" y="97" width="10" height="50" rx="4" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
+                    <rect x="52" y="97" width="10" height="50" rx="4" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
+                    <circle class="chakra-point chakra-crown" id="chakra-crown" cx="50" cy="5" r="4"/>
+                    <circle class="chakra-point chakra-third-eye" id="chakra-third-eye" cx="50" cy="18" r="4"/>
+                    <circle class="chakra-point chakra-throat" id="chakra-throat" cx="50" cy="35" r="4"/>
+                    <circle class="chakra-point chakra-heart" id="chakra-heart" cx="50" cy="52" r="4"/>
+                    <circle class="chakra-point chakra-solar" id="chakra-solar" cx="50" cy="67" r="4"/>
+                    <circle class="chakra-point chakra-sacral" id="chakra-sacral" cx="50" cy="82" r="4"/>
+                    <circle class="chakra-point chakra-root" id="chakra-root" cx="50" cy="97" r="4"/>
+                </svg>
+                <div class="chakra-labels">
+                    <span class="chakra-label" id="chakra-label-crown">Crown</span>
+                    <span class="chakra-label" id="chakra-label-third-eye">Third Eye</span>
+                    <span class="chakra-label" id="chakra-label-throat">Throat</span>
+                    <span class="chakra-label" id="chakra-label-heart">Heart</span>
+                    <span class="chakra-label" id="chakra-label-solar">Solar Plexus</span>
+                    <span class="chakra-label" id="chakra-label-sacral">Sacral</span>
+                    <span class="chakra-label" id="chakra-label-root">Root</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adaptive Screen Therapy Ambient (color overlay that changes with therapy) -->
+        <div id="screen-therapy" class="screen-therapy-overlay"></div>
+
+        <!-- Sound Journey Timeline -->
+        <div id="sound-journey" class="sound-journey" style="display:none;">
+            <div class="sound-journey-header">
+                <span class="material-icons-round">equalizer</span>
+                <span>Session Timeline</span>
+                <span class="sound-journey-elapsed" id="sound-journey-elapsed">0:00</span>
+            </div>
+            <div class="sound-journey-track" id="sound-journey-track">
+                <canvas id="sound-journey-canvas" class="sound-journey-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Sound Mixer Pad (interactive sound tiles) -->
+        <div id="mixer-pad" class="mixer-pad" style="display:none;">
+            <div class="mixer-header">
+                <span class="material-icons-round">tune</span>
+                <span>Sound Mixer</span>
+                <button id="close-mixer-btn" class="mixer-close-btn">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="mixer-grid" id="mixer-grid">
+                <button class="mixer-tile" data-sound="tibetan_bowls" data-color="#7c3aed">
+                    <span class="mixer-tile-icon">🔔</span>
+                    <span class="mixer-tile-name">Tibetan Bowls</span>
+                    <div class="mixer-tile-bar"><div class="mixer-tile-fill"></div></div>
+                </button>
+                <button class="mixer-tile" data-sound="ocean_waves" data-color="#06b6d4">
+                    <span class="mixer-tile-icon">🌊</span>
+                    <span class="mixer-tile-name">Ocean</span>
+                    <div class="mixer-tile-bar"><div class="mixer-tile-fill"></div></div>
+                </button>
+                <button class="mixer-tile" data-sound="nature_rain" data-color="#10b981">
+                    <span class="mixer-tile-icon">🌧️</span>
+                    <span class="mixer-tile-name">Rain</span>
+                    <div class="mixer-tile-bar"><div class="mixer-tile-fill"></div></div>
+                </button>
+                <button class="mixer-tile" data-sound="om_drone" data-color="#f59e0b">
+                    <span class="mixer-tile-icon">🕉️</span>
+                    <span class="mixer-tile-name">Om Drone</span>
+                    <div class="mixer-tile-bar"><div class="mixer-tile-fill"></div></div>
+                </button>
+                <button class="mixer-tile" data-sound="delta_waves" data-color="#3b82f6">
+                    <span class="mixer-tile-icon">💤</span>
+                    <span class="mixer-tile-name">Delta Sleep</span>
+                    <div class="mixer-tile-bar"><div class="mixer-tile-fill"></div></div>
+                </button>
+                <button class="mixer-tile" data-sound="solfeggio" data-color="#ec4899">
+                    <span class="mixer-tile-icon">💜</span>
+                    <span class="mixer-tile-name">Solfeggio</span>
+                    <div class="mixer-tile-bar"><div class="mixer-tile-fill"></div></div>
+                </button>
+                <button class="mixer-tile" data-sound="binaural_focus" data-color="#818cf8">
+                    <span class="mixer-tile-icon">🎯</span>
+                    <span class="mixer-tile-name">Focus</span>
+                    <div class="mixer-tile-bar"><div class="mixer-tile-fill"></div></div>
+                </button>
+                <button class="mixer-tile" data-sound="indian_raga" data-color="#ef4444">
+                    <span class="mixer-tile-icon">🎵</span>
+                    <span class="mixer-tile-name">Raga</span>
+                    <div class="mixer-tile-bar"><div class="mixer-tile-fill"></div></div>
+                </button>
+                <button class="mixer-tile" data-sound="theta_meditation" data-color="#9333ea">
+                    <span class="mixer-tile-icon">🧠</span>
+                    <span class="mixer-tile-name">Theta</span>
+                    <div class="mixer-tile-bar"><div class="mixer-tile-fill"></div></div>
+                </button>
+                <button class="mixer-tile" data-sound="chakra_tune" data-color="#eab308">
+                    <span class="mixer-tile-icon">🧘</span>
+                    <span class="mixer-tile-name">Chakra</span>
+                    <div class="mixer-tile-bar"><div class="mixer-tile-fill"></div></div>
+                </button>
+            </div>
+            <div class="mixer-actions">
+                <button id="mixer-play-btn" class="mixer-play-btn" disabled>
+                    <span class="material-icons-round">play_arrow</span>
+                    Mix & Play
+                </button>
+            </div>
+        </div>
+
+        <!-- Breathing Guide Overlay (for breathing meditation) -->
+        <div id="breathing-guide" class="breathing-guide" style="display:none;">
+            <div class="breathing-circle-container">
+                <div class="breathing-circle" id="breathing-circle">
+                    <div class="breathing-inner-glow"></div>
+                </div>
+                <span class="breathing-label" id="breathing-label">Breathe In</span>
+                <span class="breathing-count" id="breathing-count">4</span>
+            </div>
+        </div>
+
+        <!-- Spotify Now Playing Bar -->
+        <div id="spotify-bar" class="spotify-bar" style="display:none;">
+            <span class="material-icons-round spotify-icon">music_note</span>
+            <div class="spotify-info">
+                <span id="spotify-track" class="spotify-track">Playing from Spotify</span>
+                <span id="spotify-artist" class="spotify-artist"></span>
+            </div>
+            <span class="spotify-badge">Spotify</span>
+        </div>
+
+        <!-- SOS Grounding Overlay -->
+        <div id="grounding-overlay" class="grounding-overlay" style="display:none;">
+            <div class="grounding-content">
+                <div class="grounding-title">
+                    <span class="material-icons-round">healing</span>
+                    5-4-3-2-1 Grounding
+                </div>
+                <div class="grounding-steps">
+                    <div class="grounding-step" id="grounding-step-5">
+                        <span class="grounding-num">5</span>
+                        <span>things you can <strong>SEE</strong></span>
+                    </div>
+                    <div class="grounding-step" id="grounding-step-4">
+                        <span class="grounding-num">4</span>
+                        <span>things you can <strong>TOUCH</strong></span>
+                    </div>
+                    <div class="grounding-step" id="grounding-step-3">
+                        <span class="grounding-num">3</span>
+                        <span>things you can <strong>HEAR</strong></span>
+                    </div>
+                    <div class="grounding-step" id="grounding-step-2">
+                        <span class="grounding-num">2</span>
+                        <span>things you can <strong>SMELL</strong></span>
+                    </div>
+                    <div class="grounding-step" id="grounding-step-1">
+                        <span class="grounding-num">1</span>
+                        <span>thing you can <strong>TASTE</strong></span>
+                    </div>
+                </div>
+                <button id="close-grounding-btn" class="grounding-close-btn">
+                    <span class="material-icons-round">close</span> I feel calmer
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="bottom-controls">
+            <div class="bottom-controls-row">
+                <button id="mixer-btn" class="therapy-control-btn" title="Sound Mixer" style="display:none;">
+                    <span class="material-icons-round">tune</span>
+                </button>
+                <button id="stop-therapy-btn" class="therapy-control-btn" title="Stop Sounds" style="display:none;">
+                    <span class="material-icons-round">stop_circle</span>
+                </button>
+                <button id="sos-btn" class="sos-btn" title="Emergency Calm">
+                    <span class="material-icons-round">emergency</span>
+                    <span class="sos-label">SOS</span>
+                </button>
+                <button id="mic-btn" class="mic-btn active" title="Microphone">
+                    <span class="material-icons-round">mic</span>
+                </button>
+                <button id="save-sound-btn" class="therapy-control-btn" title="Save Sound" style="display:none;">
+                    <span class="material-icons-round">save_alt</span>
+                </button>
+            </div>
+            <p class="mic-hint" id="mic-hint">Tap to mute</p>
+        </div>
+    </div>
+
+    <!-- Session Health Report Overlay -->
+    <div id="session-report" class="session-report-overlay" style="display:none;">
+        <div class="report-content">
+            <div class="report-header">
+                <span class="material-icons-round report-header-icon">assessment</span>
+                <h2>Session Health Report</h2>
+                <p class="report-subtitle">Your wellness journey summary</p>
+            </div>
+
+            <div class="report-scores">
+                <div class="report-score-card before">
+                    <span class="report-score-label">Before</span>
+                    <span class="report-score-value" id="report-score-before">--</span>
+                    <span class="report-score-sublabel">Stress Level</span>
+                </div>
+                <div class="report-arrow">
+                    <span class="material-icons-round">trending_down</span>
+                </div>
+                <div class="report-score-card after">
+                    <span class="report-score-label">After</span>
+                    <span class="report-score-value" id="report-score-after">--</span>
+                    <span class="report-score-sublabel">Stress Level</span>
+                </div>
+            </div>
+
+            <div class="report-improvement" id="report-improvement">
+                <span class="material-icons-round">celebration</span>
+                <span id="report-improvement-text">0% stress reduction</span>
+            </div>
+
+            <div class="report-section">
+                <h3><span class="material-icons-round">timeline</span> Mood Journey</h3>
+                <div class="report-mood-flow" id="report-mood-flow"></div>
+            </div>
+
+            <div class="report-section">
+                <h3><span class="material-icons-round">music_note</span> Therapy Applied</h3>
+                <div class="report-therapies" id="report-therapies"></div>
+            </div>
+
+            <div class="report-section">
+                <h3><span class="material-icons-round">visibility</span> AI Observations</h3>
+                <div class="report-observations" id="report-observations"></div>
+            </div>
+
+            <div class="report-section">
+                <h3><span class="material-icons-round">monitor_heart</span> Biometrics</h3>
+                <div class="report-biometrics" id="report-biometrics">
+                    <div class="report-bio-card">
+                        <span class="material-icons-round" style="color:#ef4444">favorite</span>
+                        <span class="report-bio-value" id="report-avg-bpm">--</span>
+                        <span class="report-bio-label">Avg BPM</span>
+                    </div>
+                    <div class="report-bio-card">
+                        <span class="material-icons-round" style="color:#06b6d4">waves</span>
+                        <span class="report-bio-value" id="report-coherence">--</span>
+                        <span class="report-bio-label">Coherence</span>
+                    </div>
+                    <div class="report-bio-card">
+                        <span class="material-icons-round" style="color:#10b981">trending_down</span>
+                        <span class="report-bio-value" id="report-hr-trend">--</span>
+                        <span class="report-bio-label">HR Trend</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-section">
+                <h3><span class="material-icons-round">lightbulb</span> Recommendation</h3>
+                <p class="report-recommendation" id="report-recommendation">
+                    Based on your session, we recommend daily 10-minute sessions for sustained wellness improvement.
+                </p>
+            </div>
+
+            <div class="report-actions">
+                <button id="share-report-btn" class="report-share-btn">
+                    <span class="material-icons-round">share</span>
+                    Share Results
+                </button>
+                <button id="close-report-btn" class="primary-btn report-close-btn">
+                    <span class="material-icons-round">check_circle</span>
+                    Close Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Neurotone Analysis Overlay -->
+    <div id="neurotone-overlay" class="neurotone-overlay" style="display:none;">
+        <div class="neurotone-content">
+            <button id="close-neurotone-btn" class="neurotone-close-btn">
+                <span class="material-icons-round">close</span>
+            </button>
+
+            <!-- Scanning state -->
+            <div id="neurotone-scanning" class="neurotone-scanning">
+                <div class="neurotone-scan-ring">
+                    <div class="neurotone-scan-inner"></div>
+                </div>
+                <div class="neurotone-scan-label">Analyzing your voice frequency...</div>
+                <div class="neurotone-scan-hint">Speak naturally for 3 seconds</div>
+                <div class="neurotone-progress-bar">
+                    <div class="neurotone-progress-fill" id="neurotone-progress-fill"></div>
+                </div>
+            </div>
+
+            <!-- Result state -->
+            <div id="neurotone-result" class="neurotone-result" style="display:none;">
+                <div class="neurotone-title">
+                    <span class="material-icons-round">graphic_eq</span>
+                    Your Neurotone Profile
+                </div>
+                <div class="neurotone-freq-display">
+                    <span class="neurotone-freq-number" id="neurotone-freq-number">---</span>
+                    <span class="neurotone-freq-hz">Hz</span>
+                    <span class="neurotone-voice-type" id="neurotone-voice-type"></span>
+                </div>
+                <div class="neurotone-resonance">
+                    <span class="neurotone-resonance-label">Solfeggio Resonance</span>
+                    <div class="neurotone-resonance-bar-track">
+                        <div class="neurotone-resonance-bar-fill" id="neurotone-resonance-fill"></div>
+                    </div>
+                    <span class="neurotone-resonance-pct" id="neurotone-resonance-pct">--</span>
+                </div>
+                <div class="neurotone-solfeggio-match">
+                    <span class="material-icons-round">music_note</span>
+                    Nearest Healing Frequency: <strong id="neurotone-solfeggio-hz">---</strong> Hz
+                    <span id="neurotone-solfeggio-name" class="neurotone-solfeggio-name"></span>
+                </div>
+                <div class="neurotone-brainwave" id="neurotone-brainwave"></div>
+                <button id="neurotone-play-btn" class="neurotone-play-btn">
+                    <span class="material-icons-round">play_circle</span>
+                    Play Personalized Therapy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Frequency Matrix Panel -->
+    <div id="freqmatrix-overlay" class="freqmatrix-overlay" style="display:none;">
+        <div class="freqmatrix-content">
+            <div class="freqmatrix-header">
+                <span class="material-icons-round">ssid_chart</span>
+                <span>Frequency Matrix</span>
+                <button id="close-freqmatrix-btn" class="icon-btn">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="freqmatrix-body">
+                <!-- Left: Real-time Spectrum -->
+                <div class="freqmatrix-section">
+                    <div class="freqmatrix-section-title">Live Spectrum</div>
+                    <canvas id="freqmatrix-spectrum" class="freqmatrix-canvas"></canvas>
+                    <div class="freqmatrix-hz-labels">
+                        <span>20Hz</span><span>200Hz</span><span>1kHz</span><span>4kHz</span><span>20kHz</span>
+                    </div>
+                </div>
+                <!-- Center: Brainwave Zones -->
+                <div class="freqmatrix-section freqmatrix-brainwaves">
+                    <div class="freqmatrix-section-title">Brainwave Zones</div>
+                    <div class="brainwave-zones" id="brainwave-zones">
+                        <div class="bw-zone" data-zone="gamma">
+                            <div class="bw-zone-bar"></div>
+                            <div class="bw-zone-info">
+                                <span class="bw-zone-name">Gamma</span>
+                                <span class="bw-zone-range">30–100 Hz</span>
+                                <span class="bw-zone-desc">Peak focus, insight</span>
+                            </div>
+                        </div>
+                        <div class="bw-zone" data-zone="beta">
+                            <div class="bw-zone-bar"></div>
+                            <div class="bw-zone-info">
+                                <span class="bw-zone-name">Beta</span>
+                                <span class="bw-zone-range">14–30 Hz</span>
+                                <span class="bw-zone-desc">Alert, concentrating</span>
+                            </div>
+                        </div>
+                        <div class="bw-zone active-zone" data-zone="alpha">
+                            <div class="bw-zone-bar"></div>
+                            <div class="bw-zone-info">
+                                <span class="bw-zone-name">Alpha</span>
+                                <span class="bw-zone-range">8–14 Hz</span>
+                                <span class="bw-zone-desc">Relaxed awareness</span>
+                            </div>
+                        </div>
+                        <div class="bw-zone" data-zone="theta">
+                            <div class="bw-zone-bar"></div>
+                            <div class="bw-zone-info">
+                                <span class="bw-zone-name">Theta</span>
+                                <span class="bw-zone-range">4–8 Hz</span>
+                                <span class="bw-zone-desc">Deep meditation, REM</span>
+                            </div>
+                        </div>
+                        <div class="bw-zone" data-zone="delta">
+                            <div class="bw-zone-bar"></div>
+                            <div class="bw-zone-info">
+                                <span class="bw-zone-name">Delta</span>
+                                <span class="bw-zone-range">0.5–4 Hz</span>
+                                <span class="bw-zone-desc">Deep sleep, healing</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bw-current-therapy" id="bw-current-therapy">
+                        <span class="material-icons-round">radio_button_checked</span>
+                        <span id="bw-therapy-text">No therapy active</span>
+                    </div>
+                </div>
+                <!-- Right: Solfeggio Reference -->
+                <div class="freqmatrix-section freqmatrix-solfeggio">
+                    <div class="freqmatrix-section-title">Solfeggio Frequencies</div>
+                    <div class="solfeggio-chart">
+                        <div class="solf-row" data-hz="174"><span class="solf-hz">174 Hz</span><span class="solf-name">Pain Relief</span></div>
+                        <div class="solf-row" data-hz="285"><span class="solf-hz">285 Hz</span><span class="solf-name">Tissue Repair</span></div>
+                        <div class="solf-row" data-hz="396"><span class="solf-hz">396 Hz</span><span class="solf-name">Fear Release</span></div>
+                        <div class="solf-row" data-hz="417"><span class="solf-hz">417 Hz</span><span class="solf-name">Facilitating Change</span></div>
+                        <div class="solf-row active-solf" data-hz="528"><span class="solf-hz">528 Hz</span><span class="solf-name">Love / DNA Repair</span></div>
+                        <div class="solf-row" data-hz="639"><span class="solf-hz">639 Hz</span><span class="solf-name">Relationships</span></div>
+                        <div class="solf-row" data-hz="741"><span class="solf-hz">741 Hz</span><span class="solf-name">Intuition</span></div>
+                        <div class="solf-row" data-hz="852"><span class="solf-hz">852 Hz</span><span class="solf-name">Spiritual Order</span></div>
+                        <div class="solf-row" data-hz="963"><span class="solf-hz">963 Hz</span><span class="solf-name">Awakening</span></div>
+                    </div>
+                    <div class="solf-neurotone-marker" id="solf-neurotone-marker" style="display:none;">
+                        <span class="material-icons-round">person_pin</span>
+                        Your voice: <strong id="solf-user-hz">---</strong> Hz
+                    </div>
+                </div>
+            </div>
+            <!-- Bottom: Current therapy info bar -->
+            <div class="freqmatrix-footer">
+                <div class="fmf-item">
+                    <span class="fmf-label">Active Therapy</span>
+                    <span class="fmf-value" id="fmf-therapy">—</span>
+                </div>
+                <div class="fmf-item">
+                    <span class="fmf-label">Target Frequency</span>
+                    <span class="fmf-value" id="fmf-target-hz">—</span>
+                </div>
+                <div class="fmf-item">
+                    <span class="fmf-label">Brainwave Target</span>
+                    <span class="fmf-value" id="fmf-brainwave">—</span>
+                </div>
+                <div class="fmf-item">
+                    <span class="fmf-label">Clinical Effect</span>
+                    <span class="fmf-value" id="fmf-effect">—</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Selection Overlay -->
+    <div id="lang-overlay" class="onboard-overlay" style="display:none;">
+        <div class="onboard-content">
+            <div class="onboard-icon"><span class="material-icons-round">translate</span></div>
+            <h2>Choose Your Language</h2>
+            <p>Naada will speak and guide you in this language</p>
+            <div class="onboard-grid">
+                <button class="lang-chip" data-lang="en"><span class="chip-emoji">EN</span><span>English</span></button>
+                <button class="lang-chip" data-lang="hi"><span class="chip-emoji">HI</span><span>Hindi</span></button>
+                <button class="lang-chip" data-lang="sa"><span class="chip-emoji">SA</span><span>Sanskrit</span></button>
+                <button class="lang-chip" data-lang="pa"><span class="chip-emoji">PA</span><span>Punjabi</span></button>
+                <button class="lang-chip" data-lang="bn"><span class="chip-emoji">BN</span><span>Bengali</span></button>
+                <button class="lang-chip" data-lang="ta"><span class="chip-emoji">TA</span><span>Tamil</span></button>
+            </div>
+            <div class="lang-more-section">
+                <label class="lang-more-label">More languages</label>
+                <select id="lang-dropdown" class="lang-dropdown">
+                    <option value="">Select language...</option>
+                    <option value="es">Spanish (Espa&#241;ol)</option>
+                    <option value="fr">French (Fran&#231;ais)</option>
+                    <option value="de">German (Deutsch)</option>
+                    <option value="pt">Portuguese (Portugu&#234;s)</option>
+                    <option value="it">Italian (Italiano)</option>
+                    <option value="ru">Russian (&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;)</option>
+                    <option value="zh">Chinese (&#20013;&#25991;)</option>
+                    <option value="ja">Japanese (&#26085;&#26412;&#35486;)</option>
+                    <option value="ko">Korean (&#54620;&#44397;&#50612;)</option>
+                    <option value="ar">Arabic (&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;)</option>
+                    <option value="tr">Turkish (T&#252;rk&#231;e)</option>
+                    <option value="th">Thai (&#3616;&#3634;&#3625;&#3634;&#3652;&#3607;&#3618;)</option>
+                    <option value="vi">Vietnamese (Ti&#7871;ng Vi&#7879;t)</option>
+                    <option value="id">Indonesian (Bahasa)</option>
+                    <option value="ms">Malay (Melayu)</option>
+                    <option value="te">Telugu</option>
+                    <option value="mr">Marathi</option>
+                    <option value="gu">Gujarati</option>
+                    <option value="kn">Kannada</option>
+                    <option value="ml">Malayalam</option>
+                    <option value="ur">Urdu</option>
+                    <option value="ne">Nepali</option>
+                    <option value="si">Sinhala</option>
+                    <option value="sw">Swahili</option>
+                    <option value="pl">Polish (Polski)</option>
+                    <option value="nl">Dutch (Nederlands)</option>
+                    <option value="sv">Swedish (Svenska)</option>
+                    <option value="da">Danish (Dansk)</option>
+                    <option value="no">Norwegian (Norsk)</option>
+                    <option value="fi">Finnish (Suomi)</option>
+                    <option value="el">Greek (&#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940;)</option>
+                    <option value="he">Hebrew (&#1506;&#1489;&#1512;&#1497;&#1514;)</option>
+                    <option value="uk">Ukrainian</option>
+                    <option value="ro">Romanian</option>
+                    <option value="hu">Hungarian (Magyar)</option>
+                    <option value="cs">Czech</option>
+                    <option value="fil">Filipino (Tagalog)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Environment Selection Overlay -->
+    <div id="env-overlay" class="onboard-overlay" style="display:none;">
+        <div class="onboard-content">
+            <div class="onboard-icon"><span class="material-icons-round">location_on</span></div>
+            <h2>Where Are You Now?</h2>
+            <p>We'll adapt the sounds for your environment</p>
+            <div class="onboard-grid">
+                <button class="env-chip" data-env="home"><span class="chip-emoji">🏠</span><span>Home</span></button>
+                <button class="env-chip" data-env="office"><span class="chip-emoji">🏢</span><span>Office</span></button>
+                <button class="env-chip" data-env="outdoors"><span class="chip-emoji">🌳</span><span>Outdoors</span></button>
+                <button class="env-chip" data-env="commute"><span class="chip-emoji">🚗</span><span>Commute</span></button>
+                <button class="env-chip" data-env="gym"><span class="chip-emoji">💪</span><span>Gym</span></button>
+                <button class="env-chip" data-env="nature"><span class="chip-emoji">🌊</span><span>Nature</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Session Insight Toast -->
+    <div id="insight-toast" class="insight-toast" style="display:none;">
+        <span class="insight-icon material-icons-round">psychology</span>
+        <span class="insight-text" id="insight-text"></span>
+    </div>
+
+    <!-- Floating Zen Bubble (quick micro-meditation) -->
+    <div id="zen-bubble" class="zen-bubble" style="display:none;">
+        <div class="zen-orb" id="zen-orb">
+            <div class="zen-orb-inner"></div>
+            <span class="zen-orb-text" id="zen-orb-text">Zen</span>
+        </div>
+    </div>
+
+    <!-- Zen Meditation Overlay -->
+    <div id="zen-overlay" class="zen-overlay" style="display:none;">
+        <div class="zen-content">
+            <div class="zen-breath-circle" id="zen-breath-circle">
+                <div class="zen-breath-inner"></div>
+            </div>
+            <span class="zen-breath-label" id="zen-breath-label">Breathe In</span>
+            <span class="zen-breath-timer" id="zen-breath-timer">0:30</span>
+            <button id="close-zen-btn" class="zen-close-btn">
+                <span class="material-icons-round">close</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="material-icons-round modal-icon error">error</span>
+            <h3 id="error-title">Connection Error</h3>
+            <p id="error-message">Unable to connect to the server. Please try again.</p>
+            <button id="error-retry-btn" class="primary-btn">
+                <span class="material-icons-round">refresh</span>
+                Try Again
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/therapy-audio.js"></script>
+    <script src="/static/js/generative-audio.js"></script>
+    <script src="/static/js/visualizer.js"></script>
+    <script src="/static/js/audio-processor.js"></script>
+    <script src="/static/js/camera.js"></script>
+    <script src="/static/js/heart-rate.js"></script>
+    <script src="/static/js/sound-journey.js"></script>
+    <script src="/static/js/websocket-client.js"></script>
+    <script src="/static/js/constants.js"></script>
+    <script src="/static/js/therapy-controller.js"></script>
+    <script src="/static/js/session-tracker.js"></script>
+    <script src="/static/js/ui-effects.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script>
+        // Register Service Worker for PWA
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/static/sw.js").catch(() => {});
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+    "name": "Naada - AI Sound Therapy Companion",
+    "short_name": "Naada",
+    "description": "AI sound therapy companion that detects your mood and guides you through personalized healing frequencies, meditation, and multi-day wellness courses. Powered by Gemini.",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#0f0a1a",
+    "theme_color": "#4c1d95",
+    "categories": ["health", "medical", "lifestyle"],
+    "lang": "en",
+    "dir": "ltr",
+    "scope": "/",
+    "id": "naada-ai-therapy",
+    "icons": [
+        {
+            "src": "/static/images/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/static/images/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Start Therapy",
+            "short_name": "Therapy",
+            "url": "/?action=start",
+            "icons": []
+        },
+        {
+            "name": "Healing Courses",
+            "short_name": "Courses",
+            "url": "/?action=courses",
+            "icons": []
+        }
+    ]
+}
