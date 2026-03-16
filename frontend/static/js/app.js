@@ -206,6 +206,16 @@ class NaadaApp {
             dafDelaySlider: document.getElementById("daf-delay-slider"),
             dafToggleBtn: document.getElementById("daf-toggle-btn"),
             dafToggleLabel: document.getElementById("daf-toggle-label"),
+            composeBtn: document.getElementById("compose-btn"),
+            composeOverlay: document.getElementById("compose-overlay"),
+            closeComposeBtn: document.getElementById("close-compose-btn"),
+            composeStartBtn: document.getElementById("compose-start-btn"),
+            composeRaga: document.getElementById("compose-raga"),
+            composeInstrument: document.getElementById("compose-instrument"),
+            composeTempo: document.getElementById("compose-tempo"),
+            composeTempoVal: document.getElementById("compose-tempo-val"),
+            composeTabla: document.getElementById("compose-tabla"),
+            composeTanpura: document.getElementById("compose-tanpura"),
         };
     }
 
@@ -271,6 +281,30 @@ class NaadaApp {
             });
         }
 
+        // Compose music
+        if (this.el.composeBtn) this.el.composeBtn.addEventListener("click", () => {
+            if (this.el.composeOverlay) this.el.composeOverlay.style.display = "flex";
+        });
+        if (this.el.closeComposeBtn) this.el.closeComposeBtn.addEventListener("click", () => {
+            if (this.el.composeOverlay) this.el.composeOverlay.style.display = "none";
+        });
+        if (this.el.composeTempo) this.el.composeTempo.addEventListener("input", (e) => {
+            if (this.el.composeTempoVal) this.el.composeTempoVal.textContent = e.target.value;
+        });
+        if (this.el.composeStartBtn) this.el.composeStartBtn.addEventListener("click", () => {
+            const params = {
+                raga: this.el.composeRaga?.value || "auto",
+                instrument: this.el.composeInstrument?.value || "sitar",
+                tempo: parseInt(this.el.composeTempo?.value || "60"),
+                with_tabla: this.el.composeTabla?.checked ?? true,
+                with_tanpura: this.el.composeTanpura?.checked ?? true,
+                mood: this._currentMood || "calm",
+            };
+            this._startGenerativeComposition(params);
+            if (this.el.composeOverlay) this.el.composeOverlay.style.display = "none";
+            this._addBubble(`Composing ${params.raga === "auto" ? "auto-selected raga" : params.raga} on ${params.instrument}`, "system");
+        });
+
         // Zen bubble
         if (this.el.zenOrb) this.el.zenOrb.addEventListener("click", () => this._startZenMeditation());
         if (this.el.closeZenBtn) this.el.closeZenBtn.addEventListener("click", () => this._stopZenMeditation());
@@ -335,8 +369,12 @@ class NaadaApp {
             this.ws.sendText(`[SYSTEM CONTEXT] User language: ${langName[lang] || lang}. You MUST speak ONLY in ${langName[lang] || "English"} throughout this ENTIRE session. Do NOT switch to any other language, even if the user speaks in a different language. Always respond in ${langName[lang] || "English"} only. User is currently ${envLabel[env] || env}. Adapt sounds and voice guidance for this environment.`);
 
             this.el.moodChips.style.display = "block";
+            // Start camera analysis immediately for biometrics (heart rate, coherence)
+            setTimeout(() => this._startCameraAnalysis(), 2000);
             this._chipTimeout = setTimeout(() => {
-                if (this.el.moodChips.style.display !== "none") this._startCameraAnalysis();
+                if (this.el.moodChips.style.display !== "none") {
+                    this.ws.sendText("Please analyze my mood from my face and voice. I haven't selected a mood yet.");
+                }
             }, 15000);
             this._addBubble("Welcome! Tap how you're feeling, or let me analyze your mood.", "system");
             this._setAgentStatus("sensing");
@@ -344,6 +382,7 @@ class NaadaApp {
             if (this.el.zenBubble) this.el.zenBubble.style.display = "block";
             if (this.el.neurotonesBtn) this.el.neurotonesBtn.style.display = "flex";
             if (this.el.freqMatrixBtn) this.el.freqMatrixBtn.style.display = "flex";
+            if (this.el.composeBtn) this.el.composeBtn.style.display = "flex";
 
             if (this._selectedCondition) {
                 setTimeout(() => {
@@ -540,11 +579,8 @@ class NaadaApp {
 
         this.ws.onStatus = (status, detail) => {
             this._setAgentStatus(status);
-            if (detail) {
-                if (detail.includes("start_therapy")) this._addBubble("Starting sound therapy...", "system");
-                else if (detail.includes("assess_mood")) this._addBubble("Assessing your mood...", "system");
-                else this._addBubble(detail, "system");
-            }
+            // Don't show redundant "Using tool:" messages — the tool results already show feedback
+            // This reduces visual noise and makes the app feel faster
         };
     }
 
@@ -628,57 +664,75 @@ class NaadaApp {
     endSession() {
         this._endingSession = true;
         this._reconnectAttempts = 0;
-        const hasReport = this._wellnessScores.length >= 2 || this._moodJourney.length >= 1;
-        if (hasReport) this._showSessionReport();
 
-        this.isSessionActive = false;
-        this.isMeditationMode = false;
-        clearInterval(this._autoCaptureId);
-        this._autoCaptureId = null;
-        clearTimeout(this._chipTimeout);
-        clearTimeout(this._meditationTimer);
-        this._stopSessionTimer();
-        this.audio.destroy();
-        this.camera.destroy();
-        this.ws.disconnect();
-        this.therapy.stop();
-        this._stopBgMusic();
-        this._visualizer.stop();
-        this._particles.stop();
-        this._emotionRadar.stop();
-        this._stopBreathingGuide();
-        this._deactivateSOS();
+        // Show session report FIRST (before cleanup destroys data)
+        try {
+            const hasReport = this._wellnessScores.length >= 1 || this._moodJourney.length >= 1;
+            if (hasReport) {
+                this._showSessionReport();
+                // Don't switch to landing yet — report is visible on agent screen
+                this._cleanupSession();
+                return;
+            }
+        } catch (e) { console.warn("[Naada] Report error:", e); }
 
-        if (this._heartRate) { this._heartRate.stop(); this._heartRate = null; }
-        if (this._soundJourney) this._soundJourney.stop();
-        clearInterval(this._soundJourneyTimer);
-        this._clearScreenTherapy();
-        this._deactivateChakras();
-        this._hideAffirmation();
-        this._stopZenMeditation();
-        if (this.el.zenBubble) this.el.zenBubble.style.display = "none";
-        if (this.el.mixerBtn) this.el.mixerBtn.style.display = "none";
-        this._hideMixer();
-        this._voiceRmsHistory = [];
-        if (this.el.biometricsBar) this.el.biometricsBar.style.display = "none";
-        if (this.el.soundJourney) this.el.soundJourney.style.display = "none";
-
-        this._updateStreak();
-
-        if (this.el.moodJourneyTimeline) this.el.moodJourneyTimeline.innerHTML = "";
-        if (this.el.moodJourney) this.el.moodJourney.style.display = "none";
-        if (this.el.emotionRadar) this.el.emotionRadar.style.display = "none";
-        if (this.el.perceptionPanel) this.el.perceptionPanel.style.display = "none";
-        if (this.el.wellnessGauge) this.el.wellnessGauge.style.display = "none";
-        if (this.el.therapyScience) this.el.therapyScience.style.display = "none";
-        this.el.transcriptContent.innerHTML = "";
-        if (this.el.moodChips) this.el.moodChips.style.display = "none";
-        this._hideSpotifyBar();
-        document.body.classList.remove("meditation-mode");
-        this._setMoodBg("neutral");
-
+        this._cleanupSession();
         this._showScreen("landing");
+    }
 
+    _cleanupSession() {
+        try {
+            this.isSessionActive = false;
+            this.isMeditationMode = false;
+            clearInterval(this._autoCaptureId);
+            this._autoCaptureId = null;
+            clearTimeout(this._chipTimeout);
+            clearTimeout(this._meditationTimer);
+            this._stopSessionTimer();
+            try { this.audio.destroy(); } catch(e) {}
+            try { this.camera.destroy(); } catch(e) {}
+            try { this.ws.disconnect(); } catch(e) {}
+            try { this.therapy.stop(); } catch(e) {}
+            try { this.generative.stop(); } catch(e) {}
+            this._stopBgMusic();
+            try { this._visualizer.stop(); } catch(e) {}
+            try { this._particles.stop(); } catch(e) {}
+            try { this._emotionRadar.stop(); } catch(e) {}
+            this._stopBreathingGuide();
+            this._deactivateSOS();
+
+            if (this._heartRate) { try { this._heartRate.stop(); } catch(e) {} this._heartRate = null; }
+            if (this._soundJourney) try { this._soundJourney.stop(); } catch(e) {}
+            clearInterval(this._soundJourneyTimer);
+            this._clearScreenTherapy();
+            this._deactivateChakras();
+            this._hideAffirmation();
+            this._stopZenMeditation();
+            if (this.el.zenBubble) this.el.zenBubble.style.display = "none";
+            if (this.el.mixerBtn) this.el.mixerBtn.style.display = "none";
+            if (this.el.composeBtn) this.el.composeBtn.style.display = "none";
+            if (this.el.composeOverlay) this.el.composeOverlay.style.display = "none";
+            this._hideMixer();
+            this._voiceRmsHistory = [];
+            if (this.el.biometricsBar) this.el.biometricsBar.style.display = "none";
+            if (this.el.soundJourney) this.el.soundJourney.style.display = "none";
+
+            this._updateStreak();
+
+            if (this.el.moodJourneyTimeline) this.el.moodJourneyTimeline.innerHTML = "";
+            if (this.el.moodJourney) this.el.moodJourney.style.display = "none";
+            if (this.el.emotionRadar) this.el.emotionRadar.style.display = "none";
+            if (this.el.perceptionPanel) this.el.perceptionPanel.style.display = "none";
+            if (this.el.wellnessGauge) this.el.wellnessGauge.style.display = "none";
+            if (this.el.therapyScience) this.el.therapyScience.style.display = "none";
+            if (this.el.transcriptContent) this.el.transcriptContent.innerHTML = "";
+            if (this.el.moodChips) this.el.moodChips.style.display = "none";
+            this._hideSpotifyBar();
+            document.body.classList.remove("meditation-mode");
+            this._setMoodBg("neutral");
+        } catch (e) { console.warn("[Naada] Cleanup error:", e); }
+
+        // Reset state for next session
         this._initialWellnessScore = null;
         this._currentWellnessScore = null;
         this._wellnessScores = [];

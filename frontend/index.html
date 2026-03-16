@@ -122,6 +122,55 @@
         </div>
     </div>
 
+    <!-- Compose Music Overlay -->
+    <div id="compose-overlay" class="course-overlay" style="display:none;">
+        <div class="course-overlay-content" style="max-width:420px;">
+            <div class="course-overlay-header">
+                <h2>Compose Music</h2>
+                <button id="close-compose-btn" class="icon-btn">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="compose-controls">
+                <div class="compose-field">
+                    <label>Raga</label>
+                    <select id="compose-raga" class="compose-select">
+                        <option value="auto">Auto (mood-based)</option>
+                        <option value="yaman">Yaman - Evening Peace</option>
+                        <option value="bhairav">Bhairav - Morning Awakening</option>
+                        <option value="malkauns">Malkauns - Midnight Meditation</option>
+                        <option value="darbari">Darbari - Night Calm</option>
+                        <option value="bageshree">Bageshree - Night Healing</option>
+                        <option value="todi">Todi - Morning Contemplation</option>
+                        <option value="durga">Durga - Evening Strength</option>
+                        <option value="bhoopali">Bhoopali - Evening Joy</option>
+                    </select>
+                </div>
+                <div class="compose-field">
+                    <label>Instrument</label>
+                    <select id="compose-instrument" class="compose-select">
+                        <option value="sitar">Sitar</option>
+                        <option value="bansuri">Bansuri Flute</option>
+                        <option value="harp">Harp</option>
+                        <option value="veena">Veena</option>
+                    </select>
+                </div>
+                <div class="compose-field">
+                    <label>Tempo: <span id="compose-tempo-val">60</span> BPM</label>
+                    <input type="range" id="compose-tempo" min="30" max="120" value="60" class="compose-slider">
+                </div>
+                <div class="compose-toggles">
+                    <label><input type="checkbox" id="compose-tabla" checked> Tabla</label>
+                    <label><input type="checkbox" id="compose-tanpura" checked> Tanpura</label>
+                </div>
+                <button id="compose-start-btn" class="primary-btn gemini-btn" style="width:100%;margin-top:12px;">
+                    <span class="material-icons-round">play_arrow</span>
+                    Start Composition
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Agent Screen -->
     <div id="agent-screen" class="screen">
         <!-- Mood Background (animated gradient based on mood) -->
@@ -562,6 +611,9 @@
                 <button id="mixer-btn" class="therapy-control-btn" title="Sound Mixer" style="display:none;">
                     <span class="material-icons-round">tune</span>
                 </button>
+                <button id="compose-btn" class="therapy-control-btn" title="Compose Music" style="display:none;">
+                    <span class="material-icons-round">music_note</span>
+                </button>
                 <button id="stop-therapy-btn" class="therapy-control-btn" title="Stop Sounds" style="display:none;">
                     <span class="material-icons-round">stop_circle</span>
                 </button>
@@ -947,19 +999,19 @@
     </div>
 
     <!-- Scripts -->
-    <script src="/static/js/therapy-audio.js"></script>
-    <script src="/static/js/generative-audio.js"></script>
-    <script src="/static/js/visualizer.js"></script>
-    <script src="/static/js/audio-processor.js"></script>
-    <script src="/static/js/camera.js"></script>
-    <script src="/static/js/heart-rate.js"></script>
-    <script src="/static/js/sound-journey.js"></script>
-    <script src="/static/js/websocket-client.js"></script>
-    <script src="/static/js/constants.js"></script>
-    <script src="/static/js/therapy-controller.js"></script>
-    <script src="/static/js/session-tracker.js"></script>
-    <script src="/static/js/ui-effects.js"></script>
-    <script src="/static/js/app.js"></script>
+    <script src="/static/js/therapy-audio.js?v=3"></script>
+    <script src="/static/js/generative-audio.js?v=3"></script>
+    <script src="/static/js/visualizer.js?v=3"></script>
+    <script src="/static/js/audio-processor.js?v=3"></script>
+    <script src="/static/js/camera.js?v=3"></script>
+    <script src="/static/js/heart-rate.js?v=3"></script>
+    <script src="/static/js/sound-journey.js?v=3"></script>
+    <script src="/static/js/websocket-client.js?v=3"></script>
+    <script src="/static/js/constants.js?v=3"></script>
+    <script src="/static/js/therapy-controller.js?v=3"></script>
+    <script src="/static/js/session-tracker.js?v=3"></script>
+    <script src="/static/js/ui-effects.js?v=3"></script>
+    <script src="/static/js/app.js?v=3"></script>
     <script>
         // Register Service Worker for PWA
         if ("serviceWorker" in navigator) {

@@ -3,23 +3,23 @@
  * Provides offline shell caching and audio file caching.
  */
 
-const CACHE_NAME = "naada-v2";
+const CACHE_NAME = "naada-v3";
 const SHELL_ASSETS = [
     "/",
     "/static/css/style.css",
-    "/static/js/therapy-audio.js",
-    "/static/js/generative-audio.js",
-    "/static/js/visualizer.js",
-    "/static/js/audio-processor.js",
-    "/static/js/camera.js",
-    "/static/js/heart-rate.js",
-    "/static/js/sound-journey.js",
-    "/static/js/websocket-client.js",
-    "/static/js/constants.js",
-    "/static/js/therapy-controller.js",
-    "/static/js/session-tracker.js",
-    "/static/js/ui-effects.js",
-    "/static/js/app.js",
+    "/static/js/therapy-audio.js?v=3",
+    "/static/js/generative-audio.js?v=3",
+    "/static/js/visualizer.js?v=3",
+    "/static/js/audio-processor.js?v=3",
+    "/static/js/camera.js?v=3",
+    "/static/js/heart-rate.js?v=3",
+    "/static/js/sound-journey.js?v=3",
+    "/static/js/websocket-client.js?v=3",
+    "/static/js/constants.js?v=3",
+    "/static/js/therapy-controller.js?v=3",
+    "/static/js/session-tracker.js?v=3",
+    "/static/js/ui-effects.js?v=3",
+    "/static/js/app.js?v=3",
 ];
 
 self.addEventListener("install", (event) => {

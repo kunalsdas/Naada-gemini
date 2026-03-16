@@ -2,7 +2,7 @@
  * Naada — Shared Constants & Configuration Data
  */
 
-const COURSES = {
+var COURSES = {
     stress_7day: {
         name: "7-Day Stress Relief Journey",
         icon: "spa",
@@ -61,12 +61,12 @@ const COURSES = {
     }
 };
 
-const DIRECT_PLAY_MAP = {
+var DIRECT_PLAY_MAP = {
     baby_sleep: { therapy: "nature_rain", label: "Baby Sleep - Gentle Rain" },
     cant_sleep: { therapy: "delta_waves", label: "Sleep - Delta Waves" },
 };
 
-const THERAPY_LABELS = {
+var THERAPY_LABELS = {
     tibetan_bowls: "Tibetan Singing Bowls",
     indian_raga: "Indian Raga Drone",
     delta_waves: "Delta Wave Binaural",
@@ -87,7 +87,7 @@ const THERAPY_LABELS = {
     generative_raga: "Live AI Raga Composition",
 };
 
-const THERAPY_SCIENCE = {
+var THERAPY_SCIENCE = {
     tibetan_bowls: { hz: "396-528 Hz", name: "Tibetan Singing Bowls", desc: "Dissolves negative energy, reduces cortisol levels", evidence: "Used in Himalayan healing traditions for 3000+ years" },
     indian_raga: { hz: "Pentatonic Scale", name: "Indian Raga Therapy", desc: "Awakens energy through ancient melodic patterns", evidence: "Raga Chikitsa — documented in Ayurvedic medicine" },
     delta_waves: { hz: "1-4 Hz", name: "Delta Binaural Beats", desc: "Promotes deep sleep & cell regeneration", evidence: "Proven to increase growth hormone release during sleep" },
@@ -101,21 +101,14 @@ const THERAPY_SCIENCE = {
     generative: { hz: "Live Synthesis", name: "AI Raga Composition", desc: "Unique, never-repeating music — physically-modeled instruments", evidence: "Karplus-Strong strings, procedural raga melodic generation" },
 };
 
-const MOOD_COLORS = {
-    neutral: "#6b7280", stressed: "#ef4444", anxious: "#f59e0b",
-    sad: "#60a5fa", calm: "#06b6d4", relaxed: "#10b981",
-    happy: "#c084fc", focused: "#818cf8", peaceful: "#10b981",
-    tired: "#9ca3af", angry: "#dc2626",
-};
-
-const THERAPY_MOOD_MAP = {
+var THERAPY_MOOD_MAP = {
     tibetan_bowls: "calm", indian_raga: "happy", delta_waves: "peaceful",
     binaural_focus: "focused", om_drone: "peaceful", solfeggio: "relaxed",
     nature_rain: "peaceful", ocean_waves: "calm", theta_meditation: "peaceful",
     chakra_tune: "relaxed",
 };
 
-const CHAKRA_MAP = {
+var CHAKRA_MAP = {
     tibetan_bowls: ["heart", "throat", "third-eye"],
     indian_raga: ["heart", "sacral", "solar"],
     delta_waves: ["root", "sacral"],
@@ -128,7 +121,7 @@ const CHAKRA_MAP = {
     chakra_tune: ["root", "sacral", "solar", "heart", "throat", "third-eye", "crown"],
 };
 
-const THERAPY_FREQ_DATA = {
+var THERAPY_FREQ_DATA = {
     tibetan_bowls: { hz: "396–528 Hz", brainwave: "Alpha/Theta", effect: "Stress & fear release" },
     indian_raga: { hz: "Various", brainwave: "Alpha", effect: "Mood elevation, energy" },
     delta_waves: { hz: "1–4 Hz beat", brainwave: "Delta", effect: "Deep sleep, healing" },
@@ -148,7 +141,7 @@ const THERAPY_FREQ_DATA = {
     gamma_40hz: { hz: "40 Hz beat", brainwave: "Gamma", effect: "Cognitive, memory" },
 };
 
-const BRAINWAVE_ZONES = {
+var BRAINWAVE_ZONES = {
     tibetan_bowls: "alpha", indian_raga: "alpha", delta_waves: "delta",
     binaural_focus: "beta", om_drone: "theta", solfeggio: "alpha",
     nature_rain: "alpha", ocean_waves: "delta", theta_meditation: "theta",

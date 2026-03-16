@@ -34,6 +34,7 @@ const TherapyController = {
         this._startSoundJourney(type);
         this._activateChakras(type);
         if (this.el.mixerBtn) this.el.mixerBtn.style.display = "flex";
+        if (this.el.composeBtn) this.el.composeBtn.style.display = "flex";
         this._addBubble(`Now playing: ${THERAPY_LABELS[type] || type}`, "system");
 
         const mood = THERAPY_MOOD_MAP[type] || "calm";

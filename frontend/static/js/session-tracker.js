@@ -42,7 +42,7 @@ const SessionTracker = {
     _addMoodEntry(emotion, confidence, trigger) {
         this._moodJourney.push({
             emotion, confidence, trigger,
-            color: MOOD_COLORS[emotion] || "#a78bfa",
+            color: (MOOD_COLORS[emotion] || ["#6b5ce7","#a78bfa"])[1],
             time: new Date(),
         });
         this._renderMoodJourney();
@@ -191,7 +191,7 @@ const SessionTracker = {
                 }
                 const tag = document.createElement("span");
                 tag.className = "report-mood-tag";
-                tag.style.background = MOOD_COLORS[entry.emotion] || "#a78bfa";
+                tag.style.background = (MOOD_COLORS[entry.emotion] || ["#6b5ce7","#a78bfa"])[1];
                 tag.textContent = entry.emotion;
                 this.el.reportMoodFlow.appendChild(tag);
             });
@@ -375,7 +375,7 @@ const SessionTracker = {
                     ctx.fillText("\u2192", moodX, y);
                     moodX += 20;
                 }
-                const color = MOOD_COLORS[entry.emotion] || "#a78bfa";
+                const color = (MOOD_COLORS[entry.emotion] || ["#6b5ce7","#a78bfa"])[1];
                 ctx.fillStyle = color;
                 ctx.beginPath();
                 ctx.roundRect(moodX, y - 14, ctx.measureText(entry.emotion).width + 16, 24, 10);
